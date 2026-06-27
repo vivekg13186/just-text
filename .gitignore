@@ -1,0 +1,16 @@
+# Rust / Tauri
+src-tauri/target/
+src-tauri/gen/
+
+# Node
+node_modules/
+
+# Python (legacy PySide6 impl)
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Misc
+.DS_Store
+*.db
