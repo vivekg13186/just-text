@@ -120,3 +120,13 @@ legacy-pyside6/          the previous PySide6/Qt implementation (kept for refere
 
 - The frontend also runs in a plain browser (open `src/index.html`) for quick UI tweaks — file dialogs are disabled outside the desktop app.
 - To regenerate icons from a single source image: `cargo tauri icon path/to/icon.png`.
+
+
+# How to run to app
+
+```bash
+APP="/Applications/Just Text.app"
+xattr -dr com.apple.quarantine "$APP"
+codesign --force --deep --sign - "$APP"
+open "$APP"
+```
