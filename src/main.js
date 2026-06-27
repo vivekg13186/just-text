@@ -62,6 +62,7 @@ function loadTabIntoEditor(tab) {
   editor.scrollTop = tab.scrollTop;
   editor.setSelectionRange(tab.selStart || 0, tab.selEnd || 0);
   updateGutter();
+  if (window.Spellcheck) Spellcheck.onTabSwitch();
   editor.focus();
 }
 
@@ -367,9 +368,11 @@ function wire() {
   editor.addEventListener("input", () => {
     markDirty();
     updateGutter();
+    if (window.Spellcheck) Spellcheck.onInput();
   });
   editor.addEventListener("scroll", () => {
     gutter.scrollTop = editor.scrollTop;
+    if (window.Spellcheck) Spellcheck.onScroll();
   });
   editor.addEventListener("keydown", (e) => {
     if (e.key === "Tab") {
@@ -444,6 +447,7 @@ function wire() {
 function init() {
   setTheme(localStorage.getItem("justtext.theme") || "light");
   wire();
+  if (window.Spellcheck) Spellcheck.init(editor, $("highlights"), $("btn-spell"), setStatus);
   newTab();
 }
 

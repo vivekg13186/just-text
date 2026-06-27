@@ -283,15 +283,56 @@ button.icon-only {
   white-space: pre;
 }
 
+/* editor + spell-check overlay share identical text metrics so the
+   squiggly underlines line up exactly with the textarea glyphs. */
+.editor-stack {
+  position: relative;
+  flex: 1;
+  display: flex;
+  min-width: 0;
+  background: var(--bg);
+}
+
+.highlights {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 8px 12px;
+  margin: 0;
+  font-family: "SF Mono", Menlo, Consolas, "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre;
+  overflow: hidden;
+  tab-size: 4;
+  color: transparent;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.highlights mark.sp-err {
+  background: transparent;
+  color: transparent;
+  text-decoration-line: underline;
+  text-decoration-style: wavy;
+  text-decoration-color: #e5534b;
+  text-decoration-skip-ink: none;
+  text-underline-offset: 2px;
+}
+
 #editor {
   flex: 1;
+  position: relative;
+  z-index: 1;
   resize: none;
   border: none;
   outline: none;
   padding: 8px 12px;
   margin: 0;
   color: var(--fg);
-  background: var(--bg);
+  background: transparent;
   font-family: "SF Mono", Menlo, Consolas, "Courier New", monospace;
   font-size: 13px;
   line-height: 1.5;
@@ -303,6 +344,56 @@ button.icon-only {
 
 #editor::selection {
   background: var(--selection);
+}
+
+/* toggled-on toolbar buttons (e.g. spell check) */
+.toolbar button.active {
+  background: var(--accent-soft);
+  color: var(--fg);
+}
+
+/* spell-check suggestion context menu */
+.spell-menu {
+  position: fixed;
+  z-index: 1000;
+  min-width: 170px;
+  padding: 4px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  display: flex;
+  flex-direction: column;
+}
+
+.spell-menu button {
+  font: inherit;
+  text-align: left;
+  color: var(--fg);
+  background: transparent;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.spell-menu button:hover {
+  background: var(--hover);
+}
+
+.spell-menu button.sp-suggest {
+  font-weight: 600;
+}
+
+.spell-menu hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 4px 2px;
+}
+
+.spell-menu .sp-none {
+  padding: 6px 10px;
+  color: var(--muted);
 }
 
 /* status bar */

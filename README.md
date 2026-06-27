@@ -10,6 +10,7 @@ A lightweight, cross-platform notepad built with **Tauri 2** (Rust backend + van
 - **Find & Replace** with match-case, whole-word, wrap-around, replace and replace-all
 - **Line tools**: sort (asc / desc / case-insensitive), remove duplicates, remove empty lines, trim trailing whitespace, and keep/remove lines that *start with*, *end with*, or *contain* text — applied to the selection or the whole document
 - **Local file** open and save (native dialogs)
+- **Advanced spell check** (Hunspell `en_US` via [Typo.js](https://github.com/cfinke/Typo.js)) — squiggly underlines, suggestions via right-click **or `Ctrl/Cmd+.`** on the word at the cursor, *Add to Dictionary* (personal dictionary persisted locally), and *Ignore*; toggle from the toolbar. The dictionary is bundled, so it works fully offline.
 - **Material Design Icons** ([MDI](https://pictogrammers.com/library/mdi/)) embedded inline as SVG — no icon font or network dependency
 - **Light & dark themes** (toggle with `Ctrl/Cmd+T`, remembered between sessions)
 - **Small native executable** per platform via the Tauri bundler
@@ -59,6 +60,26 @@ git push origin v1.0.0
 
 The workflow creates a **draft** release with all platform binaries attached — review and publish it from the GitHub Releases page. You can also trigger it manually from the Actions tab (`workflow_dispatch`). No secrets to configure; it uses the built-in `GITHUB_TOKEN`.
 
+## Running on macOS (unsigned builds)
+
+The CI release builds are **not code-signed or notarized**, so macOS Gatekeeper will block them — you'll see *"Just Text is damaged and can't be opened"* (downloading sets a quarantine flag, and Apple Silicon also requires a valid signature). This is expected; the app is fine. To run it, re-sign it ad-hoc and clear the quarantine flag **once**:
+
+1. Open the downloaded `.dmg` and drag **`Just Text.app`** into `/Applications` (you can't modify it inside the mounted dmg), then eject the dmg.
+2. In Terminal:
+
+   ```bash
+   APP="/Applications/Just Text.app"
+   xattr -dr com.apple.quarantine "$APP"
+   codesign --force --deep --sign - "$APP"
+   open "$APP"
+   ```
+
+The app launches now and stays launchable. Notes:
+
+- Use the **`aarch64`** asset for Apple Silicon (M1–M4) or the **`x86_64`** asset for Intel Macs.
+- If `xattr` reports *"operation not permitted"*, prefix the command with `sudo`.
+- To remove all warnings for every user (no manual step), the app must be signed with an Apple **Developer ID** and notarized — this needs a paid Apple Developer account.
+
 ## Project layout
 
 ```
@@ -67,6 +88,9 @@ src/                     frontend (no build step)
   styles.css
   main.js                tabs, gutter, find/replace, line ops, file I/O
   lineops.js             pure line-transformation functions (also unit-tested)
+  spellcheck.js          spell-check overlay, suggestions, personal dictionary
+  typo.js                bundled Typo.js (Hunspell) engine
+  dictionaries/en_US/    bundled en_US.aff / en_US.dic
 src-tauri/               Rust backend
   Cargo.toml
   tauri.conf.json        window, bundle, withGlobalTauri config
@@ -89,6 +113,7 @@ legacy-pyside6/          the previous PySide6/Qt implementation (kept for refere
 | Close tab | `Ctrl/Cmd+W` |
 | Find & Replace | `Ctrl/Cmd+F` |
 | Copy all to clipboard | `Ctrl/Cmd+Shift+C` |
+| Spelling suggestions for word at cursor | `Ctrl/Cmd+.` |
 | Toggle theme | `Ctrl/Cmd+T` |
 
 ## Notes
