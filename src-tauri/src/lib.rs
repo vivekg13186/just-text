@@ -16,6 +16,7 @@ fn write_file(path: String, content: String) -> Result<(), String> {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_http::init())
         .invoke_handler(tauri::generate_handler![read_file, write_file])
         .run(tauri::generate_context!())
         .expect("error while running Just Text");

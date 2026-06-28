@@ -437,6 +437,7 @@ function wire() {
     else if (k === "f") { e.preventDefault(); toggleFind(true); }
     else if (k === "c" && e.shiftKey) { e.preventDefault(); copyAll(); }
     else if (k === "t") { e.preventDefault(); toggleTheme(); }
+    else if (k === "j") { e.preventDefault(); if (window.AI) AI.open(); }
     else if (k === "w") { e.preventDefault(); if (activeId != null) closeTab(activeId); }
   });
 
@@ -448,6 +449,7 @@ function init() {
   setTheme(localStorage.getItem("justtext.theme") || "light");
   wire();
   if (window.Spellcheck) Spellcheck.init(editor, $("highlights"), $("btn-spell"), setStatus);
+  if (window.AI) AI.init(editor, setStatus);
   newTab();
 }
 

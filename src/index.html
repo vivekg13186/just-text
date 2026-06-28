@@ -56,6 +56,10 @@
           </div>
         </div>
 
+        <button id="btn-ai" title="AI assistant">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M7.5,5.6L5,7L6.4,4.5L5,2L7.5,3.4L10,2L8.6,4.5L10,7L7.5,5.6M19.5,15.4L22,14L20.6,16.5L22,19L19.5,17.6L17,19L18.4,16.5L17,14L19.5,15.4M22,2L20.6,4.5L22,7L19.5,5.6L17,7L18.4,4.5L17,2L19.5,3.4L22,2M13.34,12.78L15.78,10.34L13.66,8.22L11.22,10.66L13.34,12.78M14.37,7.29L16.71,9.63C17.1,10 17.1,10.65 16.71,11.04L5.04,22.71C4.65,23.1 4,23.1 3.63,22.71L1.29,20.37C0.9,20 0.9,19.35 1.29,18.96L12.96,7.29C13.35,6.9 14,6.9 14.37,7.29Z"/></svg>
+          <span>AI</span>
+        </button>
         <button id="btn-spell" title="Toggle spell check">
           <svg class="icon" viewBox="0 0 24 24"><path d="M21.59,11.59L13.5,19.68L9.83,16L8.42,17.41L13.5,22.5L23,13M6.43,11L8.5,5.5L10.57,11M12.45,16H14.54L9.43,3H7.57L2.46,16H4.55L5.67,13H11.31L12.45,16Z"/></svg>
           <span>Spell</span>
@@ -109,9 +113,84 @@
       <footer class="statusbar" id="statusbar">Ready</footer>
     </div>
 
+    <!-- AI assistant modal -->
+    <div class="modal-overlay" id="ai-overlay" hidden>
+      <div class="modal" role="dialog" aria-label="AI assistant">
+        <div class="modal-head">
+          <strong>AI Assistant</strong>
+          <button id="ai-close" class="icon-only" title="Close">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/></svg>
+          </button>
+        </div>
+
+        <!-- main view -->
+        <div id="ai-main">
+          <div class="ai-scope-row">
+            <span class="ai-muted">Applies to:</span>
+            <span id="ai-scope">Whole document</span>
+            <button id="ai-settings-link" class="ai-link">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8M12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12A2,2 0 0,0 12,10M10,22C9.75,22 9.54,21.82 9.5,21.58L9.13,18.93C8.5,18.68 7.96,18.34 7.44,17.94L4.95,18.95C4.73,19.03 4.46,18.95 4.34,18.73L2.34,15.27C2.21,15.05 2.27,14.78 2.46,14.63L4.57,12.97L4.5,12L4.57,11L2.46,9.37C2.27,9.22 2.21,8.95 2.34,8.73L4.34,5.27C4.46,5.05 4.73,4.96 4.95,5.05L7.44,6.05C7.96,5.66 8.5,5.32 9.13,5.07L9.5,2.42C9.54,2.18 9.75,2 10,2H14C14.25,2 14.46,2.18 14.5,2.42L14.87,5.07C15.5,5.32 16.04,5.66 16.56,6.05L19.05,5.05C19.27,4.96 19.54,5.05 19.66,5.27L21.66,8.73C21.79,8.95 21.73,9.22 21.54,9.37L19.43,11L19.5,12L19.43,13L21.54,14.63C21.73,14.78 21.79,15.05 21.66,15.27L19.66,18.73C19.54,18.95 19.27,19.04 19.05,18.95L16.56,17.95C16.04,18.34 15.5,18.68 14.87,18.93L14.5,21.58C14.46,21.82 14.25,22 14,22H10Z"/></svg>
+              Provider
+            </button>
+          </div>
+
+          <div class="ai-presets" id="ai-presets"></div>
+
+          <textarea id="ai-prompt" class="ai-prompt" rows="3" placeholder="Describe what to do with the text (e.g. “Summarize in 3 bullet points”)…"></textarea>
+
+          <div class="ai-actions">
+            <button id="ai-run" class="ai-primary">Run</button>
+            <span id="ai-spinner" class="ai-spinner" hidden></span>
+          </div>
+
+          <div id="ai-error" class="ai-error" hidden></div>
+
+          <div id="ai-output-wrap" hidden>
+            <label class="ai-muted">Result</label>
+            <textarea id="ai-output" class="ai-output" rows="8" readonly></textarea>
+            <div class="ai-actions">
+              <button id="ai-replace" class="ai-primary">Replace</button>
+              <button id="ai-insert">Insert below</button>
+              <button id="ai-copy">Copy</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- settings view -->
+        <div id="ai-settings" hidden>
+          <div class="ai-field">
+            <label>Provider</label>
+            <select id="ai-provider">
+              <option value="openai">OpenAI-compatible (OpenAI, OpenRouter, LM Studio…)</option>
+              <option value="anthropic">Anthropic (Claude)</option>
+              <option value="ollama">Ollama (local)</option>
+            </select>
+          </div>
+          <div class="ai-field">
+            <label>Base URL</label>
+            <input id="ai-baseurl" type="text" />
+          </div>
+          <div class="ai-field" id="ai-key-row">
+            <label>API key</label>
+            <input id="ai-key" type="password" placeholder="sk-…" />
+          </div>
+          <div class="ai-field">
+            <label>Model</label>
+            <input id="ai-model" type="text" />
+          </div>
+          <p class="ai-note">Settings are stored locally on this computer.</p>
+          <div class="ai-actions">
+            <button id="ai-save" class="ai-primary">Save</button>
+            <button id="ai-settings-back">Back</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="lineops.js"></script>
     <script src="typo.js"></script>
     <script src="spellcheck.js"></script>
+    <script src="ai.js"></script>
     <script src="main.js"></script>
   </body>
 </html>
