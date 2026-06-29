@@ -63,6 +63,7 @@ function loadTabIntoEditor(tab) {
   editor.setSelectionRange(tab.selStart || 0, tab.selEnd || 0);
   updateGutter();
   if (window.Spellcheck) Spellcheck.onTabSwitch();
+  if (window.Preview) Preview.onTabSwitch();
   editor.focus();
 }
 
@@ -353,10 +354,36 @@ async function copyAll() {
   }
 }
 
+// ---- word wrap ------------------------------------------------------------
+function setWrap(on) {
+  const wrap = document.getElementById("editor-wrap");
+  wrap.classList.toggle("wrap-on", on);
+  editor.setAttribute("wrap", on ? "soft" : "off");
+  const btn = $("btn-wrap");
+  if (btn) btn.classList.toggle("active", on);
+  localStorage.setItem("justtext.wrap", on ? "1" : "0");
+  if (window.Spellcheck) {
+    Spellcheck.setWrap(on);
+    Spellcheck.refreshNow && Spellcheck.refreshNow();
+  }
+  updateGutter();
+}
+function toggleWrap() {
+  setWrap(document.getElementById("editor-wrap").classList.contains("wrap-on") ? false : true);
+}
+
 // ---- theme ----------------------------------------------------------------
 function setTheme(name) {
   document.documentElement.setAttribute("data-theme", name);
   localStorage.setItem("justtext.theme", name);
+  const dark = name === "dark";
+  const hl = document.getElementById("hljs-light");
+  const hd = document.getElementById("hljs-dark");
+  if (hl && hd) {
+    hl.disabled = dark;
+    hd.disabled = !dark;
+  }
+  if (window.Preview) Preview.onThemeChange();
 }
 function toggleTheme() {
   const cur = document.documentElement.getAttribute("data-theme");
@@ -369,6 +396,7 @@ function wire() {
     markDirty();
     updateGutter();
     if (window.Spellcheck) Spellcheck.onInput();
+    if (window.Preview) Preview.onInput();
   });
   editor.addEventListener("scroll", () => {
     gutter.scrollTop = editor.scrollTop;
@@ -392,6 +420,7 @@ function wire() {
   $("btn-find").onclick = () => toggleFind();
   $("btn-copyall").onclick = copyAll;
   $("btn-theme").onclick = toggleTheme;
+  $("btn-wrap").onclick = toggleWrap;
 
   // lines dropdown
   const linesMenu = $("lines-menu");
@@ -427,6 +456,11 @@ function wire() {
 
   // global shortcuts
   document.addEventListener("keydown", (e) => {
+    if (e.altKey && !e.ctrlKey && !e.metaKey && e.key.toLowerCase() === "z") {
+      e.preventDefault();
+      toggleWrap();
+      return;
+    }
     const mod = e.ctrlKey || e.metaKey;
     if (!mod) return;
     const k = e.key.toLowerCase();
@@ -438,6 +472,7 @@ function wire() {
     else if (k === "c" && e.shiftKey) { e.preventDefault(); copyAll(); }
     else if (k === "t") { e.preventDefault(); toggleTheme(); }
     else if (k === "j") { e.preventDefault(); if (window.AI) AI.open(); }
+    else if (k === "p" && e.shiftKey) { e.preventDefault(); if (window.Preview) Preview.toggle(); }
     else if (k === "w") { e.preventDefault(); if (activeId != null) closeTab(activeId); }
   });
 
@@ -450,6 +485,8 @@ function init() {
   wire();
   if (window.Spellcheck) Spellcheck.init(editor, $("highlights"), $("btn-spell"), setStatus);
   if (window.AI) AI.init(editor, setStatus);
+  if (window.Preview) Preview.init(editor, $("editor-wrap"), $("preview"), $("btn-preview"), setStatus);
+  setWrap(localStorage.getItem("justtext.wrap") === "1");
   newTab();
 }
 

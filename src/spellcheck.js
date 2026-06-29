@@ -22,6 +22,11 @@
     _ignore: new Set(),
     _charWidth: 8,
     _debounce: null,
+    _wrap: false,
+
+    setWrap(on) {
+      this._wrap = !!on;
+    },
 
     init(editor, highlights, button, statusCb) {
       this.editor = editor;
@@ -247,7 +252,11 @@
     // ---- context menu ----
     _onContextMenu(e) {
       if (!this.enabled || !this.ready) return; // allow native menu
-      const hit = this._wordAtPoint(e.clientX, e.clientY);
+      // In wrap mode the monospace coordinate math is unreliable; right-click
+      // moves the caret in the textarea, so use the caret offset instead.
+      const hit = this._wrap
+        ? this._wordAtIndex(this.editor.selectionStart)
+        : this._wordAtPoint(e.clientX, e.clientY);
       if (!hit || this._isCorrect(hit.word)) return; // not a misspelling -> native menu
       e.preventDefault();
       const suggestions = (this.typo.suggest(hit.word, 7) || []).filter(Boolean);

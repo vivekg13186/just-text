@@ -6,9 +6,11 @@ A lightweight, cross-platform notepad built with **Tauri 2** (Rust backend + van
 
 - **Multi-tab editing** with unsaved-change indicators
 - **Line numbers** in a synced gutter
+- **Word wrap** toggle (`Alt+Z`, remembered between sessions) — soft-wrap long lines; the line-number gutter hides while wrapped
 - **Cut / copy / paste** (native), plus **Copy All to Clipboard**
 - **Find & Replace** with match-case, whole-word, wrap-around, replace and replace-all
 - **Line tools**: sort (asc / desc / case-insensitive), remove duplicates, remove empty lines, trim trailing whitespace, and keep/remove lines that *start with*, *end with*, or *contain* text — applied to the selection or the whole document
+- **Markdown preview** (`Ctrl/Cmd+Shift+P`) — live split-pane GitHub-flavored markdown with syntax-highlighted code blocks, tables, task lists, blockquotes, images, and **Mermaid diagrams**. Theme-aware and fully offline (libraries are bundled).
 - **Local file** open and save (native dialogs)
 - **AI assistant** — configure a provider (OpenAI-compatible, Anthropic, or local Ollama) and run a prompt over the selection or whole document to summarize, rewrite, fix, translate, etc., with one-click presets; preview the result and Replace / Insert / Copy. Requests route through the Rust HTTP layer (no browser CORS issues).
 - **Advanced spell check** (Hunspell `en_US` via [Typo.js](https://github.com/cfinke/Typo.js)) — squiggly underlines, suggestions via right-click **or `Ctrl/Cmd+.`** on the word at the cursor, *Add to Dictionary* (personal dictionary persisted locally), and *Ignore*; toggle from the toolbar. The dictionary is bundled, so it works fully offline.
@@ -103,8 +105,10 @@ src/                     frontend (no build step)
   lineops.js             pure line-transformation functions (also unit-tested)
   spellcheck.js          spell-check overlay, suggestions, personal dictionary
   ai.js                  AI provider config + summarize/transform panel
+  preview.js             markdown preview (marked + highlight.js + mermaid)
   typo.js                bundled Typo.js (Hunspell) engine
   dictionaries/en_US/    bundled en_US.aff / en_US.dic
+  vendor/                bundled libs: marked, DOMPurify, highlight.js, mermaid
 src-tauri/               Rust backend
   Cargo.toml
   tauri.conf.json        window, bundle, withGlobalTauri config
@@ -129,6 +133,8 @@ legacy-pyside6/          the previous PySide6/Qt implementation (kept for refere
 | Copy all to clipboard | `Ctrl/Cmd+Shift+C` |
 | Spelling suggestions for word at cursor | `Ctrl/Cmd+.` |
 | Open AI assistant | `Ctrl/Cmd+J` |
+| Toggle markdown preview | `Ctrl/Cmd+Shift+P` |
+| Toggle word wrap | `Alt+Z` |
 | Toggle theme | `Ctrl/Cmd+T` |
 
 ## Notes

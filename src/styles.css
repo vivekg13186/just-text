@@ -12,6 +12,8 @@
   --current-line: #fff7d6;
   --selection: #cfe3ff;
   --hover: #eef1f4;
+  --scrollbar-thumb: #c4cad1;
+  --scrollbar-thumb-hover: #a7b0ba;
 }
 
 [data-theme="dark"] {
@@ -28,6 +30,8 @@
   --current-line: #1c2128;
   --selection: #264f78;
   --hover: #30363d;
+  --scrollbar-thumb: #30363d;
+  --scrollbar-thumb-hover: #4b535d;
 }
 
 * {
@@ -38,6 +42,32 @@
    (e.g. .modal-overlay/.find-panel set display:flex). */
 [hidden] {
   display: none !important;
+}
+
+/* Theme-aware scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 7px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 html,
@@ -83,6 +113,13 @@ body {
 
 .toolbar button:hover {
   background: var(--hover);
+}
+
+/* Icon-only toolbar: hide inline labels, keep them as the native tooltip
+   (each button has a `title`). The Lines dropdown chevron stays visible. */
+.toolbar > button > span,
+.toolbar .menu > button > span {
+  display: none;
 }
 
 /* MDI icons */
@@ -598,6 +635,138 @@ button.icon-only {
 .ai-note {
   font-size: 12px;
   color: var(--muted);
+}
+
+/* ---- word wrap mode ---- */
+.editor-wrap.wrap-on .gutter {
+  display: none;
+}
+.editor-wrap.wrap-on #editor,
+.editor-wrap.wrap-on .highlights {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+}
+
+/* ---- markdown preview pane ---- */
+.editor-wrap.preview-on .editor-stack {
+  border-right: 1px solid var(--border);
+}
+
+.preview {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  padding: 16px 22px;
+  background: var(--bg);
+}
+
+/* GitHub-ish markdown typography, theme-aware via CSS variables */
+.markdown-body {
+  color: var(--fg);
+  line-height: 1.6;
+  font-size: 14px;
+  word-wrap: break-word;
+}
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
+  margin: 1.2em 0 0.6em;
+  line-height: 1.25;
+  font-weight: 600;
+}
+.markdown-body h1 {
+  font-size: 1.8em;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.3em;
+}
+.markdown-body h2 {
+  font-size: 1.45em;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.3em;
+}
+.markdown-body h3 {
+  font-size: 1.2em;
+}
+.markdown-body p,
+.markdown-body ul,
+.markdown-body ol,
+.markdown-body blockquote,
+.markdown-body table,
+.markdown-body pre {
+  margin: 0 0 1em;
+}
+.markdown-body a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+.markdown-body code {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.88em;
+  background: var(--panel);
+  padding: 0.15em 0.4em;
+  border-radius: 5px;
+}
+.markdown-body pre {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  overflow: auto;
+}
+.markdown-body pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+.markdown-body blockquote {
+  color: var(--muted);
+  border-left: 3px solid var(--border);
+  padding: 0 1em;
+}
+.markdown-body table {
+  border-collapse: collapse;
+  display: block;
+  overflow: auto;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+}
+.markdown-body th {
+  background: var(--panel);
+}
+.markdown-body tr:nth-child(2n) td {
+  background: var(--panel-2);
+}
+.markdown-body img {
+  max-width: 100%;
+}
+.markdown-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.5em 0;
+}
+.markdown-body ul.contains-task-list {
+  list-style: none;
+  padding-left: 1em;
+}
+.markdown-body .mermaid {
+  display: flex;
+  justify-content: center;
+  background: var(--bg);
+  margin: 0 0 1em;
+}
+.markdown-body .mermaid-error {
+  color: #e5534b;
+  font-family: monospace;
+  white-space: pre-wrap;
 }
 
 /* status bar */
