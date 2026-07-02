@@ -355,6 +355,12 @@ button.icon-only {
   z-index: 0;
 }
 
+/* AI autocomplete ghost text (rendered in an overlay, behind the textarea) */
+.ghost-text {
+  color: var(--muted);
+  opacity: 0.6;
+}
+
 .highlights mark.sp-err {
   background: transparent;
   color: transparent;
@@ -767,6 +773,25 @@ button.icon-only {
   color: #e5534b;
   font-family: monospace;
   white-space: pre-wrap;
+}
+
+/* drag & drop overlay */
+body.dragging::after {
+  content: "Drop files to open";
+  position: fixed;
+  inset: 10px;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent);
+  background: rgba(9, 105, 218, 0.08);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border: 3px dashed var(--accent);
+  border-radius: 14px;
+  pointer-events: none;
 }
 
 /* status bar */

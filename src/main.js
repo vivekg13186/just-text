@@ -64,6 +64,7 @@ function loadTabIntoEditor(tab) {
   updateGutter();
   if (window.Spellcheck) Spellcheck.onTabSwitch();
   if (window.Preview) Preview.onTabSwitch();
+  if (window.Autocomplete) Autocomplete.onTabSwitch();
   editor.focus();
 }
 
@@ -296,13 +297,21 @@ function toggleFind(show) {
 }
 
 // ---- file save/open -------------------------------------------------------
-async function openFile() {
-  if (!dialog) return setStatus("File dialogs require the desktop app");
-  const path = await dialog.open({
-    multiple: false,
-    filters: [{ name: "Text", extensions: ["txt", "md", "log", "csv"] }, { name: "All", extensions: ["*"] }],
-  });
-  if (!path) return;
+// Common text/code extensions offered as a convenience filter (All files too).
+const TEXT_EXTS = [
+  "txt", "text", "md", "markdown", "mdown", "rst", "log", "csv", "tsv",
+  "json", "jsonc", "geojson", "xml", "yaml", "yml", "toml", "ini", "conf",
+  "cfg", "properties", "env", "gitignore", "editorconfig",
+  "js", "mjs", "cjs", "jsx", "ts", "tsx", "json5", "py", "rb", "go", "rs",
+  "c", "h", "cpp", "cc", "hpp", "cs", "java", "kt", "kts", "swift", "m",
+  "php", "pl", "lua", "r", "jl", "dart", "scala", "clj", "ex", "exs",
+  "sh", "bash", "zsh", "fish", "ps1", "bat", "cmd", "sql", "graphql",
+  "html", "htm", "xhtml", "css", "scss", "sass", "less", "vue", "svelte",
+  "tex", "bib", "srt", "vtt", "diff", "patch", "make", "mk", "cmake",
+  "dockerfile", "gradle", "ipynb",
+];
+
+async function openPath(path) {
   const content = await backend.readFile(path);
   saveEditorToState();
   const name = path.split(/[\\/]/).pop();
@@ -311,6 +320,68 @@ async function openFile() {
   tab.dirty = false;
   renderTabs();
   setStatus(`Opened ${path}`);
+}
+
+async function openFile() {
+  if (!dialog) return setStatus("File dialogs require the desktop app");
+  const selection = await dialog.open({
+    multiple: true,
+    filters: [
+      { name: "All files", extensions: ["*"] },
+      { name: "Text & code", extensions: TEXT_EXTS },
+    ],
+  });
+  if (!selection) return;
+  const paths = Array.isArray(selection) ? selection : [selection];
+  for (const p of paths) {
+    try {
+      await openPath(p);
+    } catch (err) {
+      setStatus(`Could not open ${p}`);
+    }
+  }
+}
+
+// ---- drag & drop ----------------------------------------------------------
+function setupDragDrop() {
+  if (TAURI && TAURI.event && TAURI.event.listen) {
+    // Tauri intercepts OS file drops and emits its own events (with real paths)
+    TAURI.event.listen("tauri://drag-enter", () => document.body.classList.add("dragging"));
+    TAURI.event.listen("tauri://drag-over", () => document.body.classList.add("dragging"));
+    TAURI.event.listen("tauri://drag-leave", () => document.body.classList.remove("dragging"));
+    TAURI.event.listen("tauri://drag-drop", async (e) => {
+      document.body.classList.remove("dragging");
+      const paths = (e.payload && e.payload.paths) || [];
+      for (const p of paths) {
+        try {
+          await openPath(p);
+        } catch (err) {
+          setStatus(`Could not open ${p}`);
+        }
+      }
+    });
+  } else {
+    // Plain-browser fallback: read dropped File objects directly
+    window.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      document.body.classList.add("dragging");
+    });
+    window.addEventListener("dragleave", (e) => {
+      if (e.target === document.documentElement) document.body.classList.remove("dragging");
+    });
+    window.addEventListener("drop", async (e) => {
+      e.preventDefault();
+      document.body.classList.remove("dragging");
+      const files = [...((e.dataTransfer && e.dataTransfer.files) || [])];
+      for (const f of files) {
+        const text = await f.text();
+        saveEditorToState();
+        const tab = newTab(f.name, text);
+        tab.dirty = false;
+        renderTabs();
+      }
+    });
+  }
 }
 
 async function saveFile() {
@@ -397,13 +468,20 @@ function wire() {
     updateGutter();
     if (window.Spellcheck) Spellcheck.onInput();
     if (window.Preview) Preview.onInput();
+    if (window.Autocomplete) Autocomplete.onInput();
   });
   editor.addEventListener("scroll", () => {
     gutter.scrollTop = editor.scrollTop;
     if (window.Spellcheck) Spellcheck.onScroll();
+    if (window.Autocomplete) Autocomplete.onScroll();
   });
   editor.addEventListener("keydown", (e) => {
     if (e.key === "Tab") {
+      // Tab first accepts an AI autocomplete ghost suggestion if one is showing
+      if (window.Autocomplete && Autocomplete.acceptIfVisible()) {
+        e.preventDefault();
+        return;
+      }
       e.preventDefault();
       editor.setRangeText("\t", editor.selectionStart, editor.selectionEnd, "end");
       markDirty();
@@ -485,8 +563,10 @@ function init() {
   wire();
   if (window.Spellcheck) Spellcheck.init(editor, $("highlights"), $("btn-spell"), setStatus);
   if (window.AI) AI.init(editor, setStatus);
+  if (window.Autocomplete) Autocomplete.init(editor, $("ghost"), $("btn-autocomplete"), setStatus);
   if (window.Preview) Preview.init(editor, $("editor-wrap"), $("preview"), $("btn-preview"), setStatus);
   setWrap(localStorage.getItem("justtext.wrap") === "1");
+  setupDragDrop();
   newTab();
 }
 

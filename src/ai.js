@@ -133,6 +133,7 @@
         this._onProviderChange(true);
         this.$("ai-key").value = this.cfg.apiKey || "";
         this.$("ai-model").value = this.cfg.model || "";
+        this.$("ai-completion-model").value = this.cfg.completionModel || "";
         this.$("ai-baseurl").value = this.cfg.baseUrl || "";
       }
     },
@@ -154,6 +155,7 @@
         provider: p,
         baseUrl: (this.$("ai-baseurl").value || DEFAULTS[p].baseUrl).trim(),
         model: (this.$("ai-model").value || DEFAULTS[p].model).trim(),
+        completionModel: this.$("ai-completion-model").value.trim(),
         apiKey: this.$("ai-key").value.trim(),
       };
       this._save();
@@ -212,10 +214,24 @@
       this.$("ai-output").value = text || "";
     },
 
+    // ---- autocomplete (used by autocomplete.js) ----
+    async completion(before) {
+      if (!this.isConfigured()) throw new Error("AI provider not configured");
+      const system =
+        "You are an inline autocomplete engine inside a plain-text editor. " +
+        "Continue the user's text naturally from where it stops. " +
+        "Return ONLY the continuation to append directly after the given text — " +
+        "do not repeat any of the input, do not add quotes, labels or explanations. " +
+        "Keep it brief: at most one sentence or line.";
+      // use the dedicated autocomplete model if the user set one
+      return this._complete(system, before, this.cfg.completionModel || undefined);
+    },
+
     // ---- provider calls ----
-    async _complete(system, user) {
+    async _complete(system, user, modelOverride) {
       const c = this.cfg;
       const base = c.baseUrl.replace(/\/+$/, "");
+      const model = modelOverride || c.model;
       let url, headers, body, pick;
 
       if (c.provider === "anthropic") {
@@ -226,7 +242,7 @@
           "anthropic-version": "2023-06-01",
         };
         body = {
-          model: c.model,
+          model,
           max_tokens: 4096,
           system,
           messages: [{ role: "user", content: user }],
@@ -236,7 +252,7 @@
         url = base + "/api/chat";
         headers = { "Content-Type": "application/json" };
         body = {
-          model: c.model,
+          model,
           stream: false,
           options: { temperature: 0.3 },
           messages: [
@@ -253,7 +269,7 @@
           Authorization: "Bearer " + c.apiKey,
         };
         body = {
-          model: c.model,
+          model,
           temperature: 0.3,
           messages: [
             { role: "system", content: system },

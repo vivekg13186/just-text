@@ -11,8 +11,10 @@ A lightweight, cross-platform notepad built with **Tauri 2** (Rust backend + van
 - **Find & Replace** with match-case, whole-word, wrap-around, replace and replace-all
 - **Line tools**: sort (asc / desc / case-insensitive), remove duplicates, remove empty lines, trim trailing whitespace, and keep/remove lines that *start with*, *end with*, or *contain* text — applied to the selection or the whole document
 - **Markdown preview** (`Ctrl/Cmd+Shift+P`) — live split-pane GitHub-flavored markdown with syntax-highlighted code blocks, tables, task lists, blockquotes, images, and **Mermaid diagrams**. Theme-aware and fully offline (libraries are bundled).
-- **Local file** open and save (native dialogs)
+- **Local file** open and save (native dialogs) — open **any text file** (the dialog defaults to all files, with a text/code convenience filter), multi-select supported
+- **Drag & drop** files onto the window to open them (each in a new tab)
 - **AI assistant** — configure a provider (OpenAI-compatible, Anthropic, or local Ollama) and run a prompt over the selection or whole document to summarize, rewrite, fix, translate, etc., with one-click presets; preview the result and Replace / Insert / Copy. Requests route through the Rust HTTP layer (no browser CORS issues).
+- **AI autocomplete** — toggle on inline "ghost text" completions from the same provider: pause while typing at the end of the document and a greyed suggestion appears; press **Tab** to accept, **Esc** to dismiss. Off by default (it makes API calls as you type). An optional separate **autocomplete model** can be set (e.g. a small fast model) so it differs from the model used by the AI panel.
 - **Advanced spell check** (Hunspell `en_US` via [Typo.js](https://github.com/cfinke/Typo.js)) — squiggly underlines, suggestions via right-click **or `Ctrl/Cmd+.`** on the word at the cursor, *Add to Dictionary* (personal dictionary persisted locally), and *Ignore*; toggle from the toolbar. The dictionary is bundled, so it works fully offline.
 - **Material Design Icons** ([MDI](https://pictogrammers.com/library/mdi/)) embedded inline as SVG — no icon font or network dependency
 - **Light & dark themes** (toggle with `Ctrl/Cmd+T`, remembered between sessions)
@@ -105,6 +107,7 @@ src/                     frontend (no build step)
   lineops.js             pure line-transformation functions (also unit-tested)
   spellcheck.js          spell-check overlay, suggestions, personal dictionary
   ai.js                  AI provider config + summarize/transform panel
+  autocomplete.js        AI inline ghost-text completions (Tab to accept)
   preview.js             markdown preview (marked + highlight.js + mermaid)
   typo.js                bundled Typo.js (Hunspell) engine
   dictionaries/en_US/    bundled en_US.aff / en_US.dic
