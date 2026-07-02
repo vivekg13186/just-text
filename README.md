@@ -65,6 +65,15 @@ git push origin v1.0.0
 
 The workflow creates a **draft** release with all platform binaries attached — review and publish it from the GitHub Releases page. You can also trigger it manually from the Actions tab (`workflow_dispatch`). No secrets to configure; it uses the built-in `GITHUB_TOKEN`.
 
+### Windows-only .exe
+
+To build **just a Windows `.exe`** (no other platforms), run the **Windows EXE** workflow from the Actions tab and choose:
+
+- **installer** — an NSIS setup `.exe` (`src-tauri/target/release/bundle/nsis/*-setup.exe`)
+- **portable** — a single self-contained `just-text.exe` with no installer
+
+The result is uploaded as a downloadable workflow **artifact** (not a release).
+
 ## AI assistant setup
 
 Click **AI** in the toolbar (or `Ctrl/Cmd+J`) → **Provider** to configure:
