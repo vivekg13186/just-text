@@ -402,8 +402,14 @@ async function saveFileAs() {
   const t = activeTab();
   if (!t || !dialog) return setStatus("File dialogs require the desktop app");
   saveEditorToState();
+  // "All files" first so the dialog doesn't force a .txt extension; keep the
+  // current filename/extension as the default so e.g. .md stays .md.
   const path = await dialog.save({
-    filters: [{ name: "Text", extensions: ["txt"] }, { name: "All", extensions: ["*"] }],
+    defaultPath: t.filePath || t.title.replace(/ \*$/, "") || "untitled",
+    filters: [
+      { name: "All files", extensions: ["*"] },
+      { name: "Text & code", extensions: TEXT_EXTS },
+    ],
   });
   if (!path) return;
   await backend.writeFile(path, t.content);
